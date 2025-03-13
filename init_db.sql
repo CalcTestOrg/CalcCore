@@ -2,12 +2,12 @@ CREATE DATABASE CalculatorDB;
 
 USE CalculatorDB;
 
-CREATE TABLE Results (
-    id INT PRIMARY KEY IDENTITY(1,1),
-    expression NVARCHAR(255),
-    result FLOAT,
-    timestamp DATETIME DEFAULT GETDATE()
+CREATE TABLE [Results] (
+    [ID] INT PRIMARY KEY IDENTITY,
+    [Expression] VARCHAR(255),
+    [Result] FLOAT,
+    [timestamp] DATETIME DEFAULT GETDATE()
 );
 
-
-SELECT * FROM Results;
+DROP TABLE [Results]
+SELECT * FROM [Results];

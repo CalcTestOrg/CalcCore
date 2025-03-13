@@ -1,18 +1,16 @@
 import tkinter as tk
 import socket
-import subprocess
-import time
 
-server_process = subprocess.Popen(["python", "server.py"])
-time.sleep(2)  
+IP = '127.0.0.1'
+PORT = 4000
+
+client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client.connect((IP, PORT))  
 
 def send_to_server(expression):
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client.connect(('127.0.0.1', 4000))  
     client.send(expression.encode())  
     response = client.recv(1024).decode()  
     result_var.set(response)  
-    client.close()
 
 root = tk.Tk()
 root.title("Калькулятор")
@@ -60,4 +58,9 @@ multiply_button.grid(row=3, column=2)
 divide_button = tk.Button(root, text="Делить", command=divide)
 divide_button.grid(row=4, column=0)
 
+def on_closing():
+    client.close()  
+    root.destroy()
+
+root.protocol("WM_DELETE_WINDOW", on_closing)
 root.mainloop()

@@ -9,6 +9,9 @@ class CalcCore:
 
     def calculate(self, expression):
         try:
+            if not self.validate_expression(expression):
+                return "Ошибка: Некорректное выражение"
+
             expression = self.process_functions(expression)
             return eval(expression)
         except Exception as e:
@@ -22,3 +25,6 @@ class CalcCore:
                 num = float(expression[start:end])
                 expression = expression.replace(f'{func_name}({num})', str(func(num)))
         return expression
+
+    def validate_expression(self, expression):
+        return all(c.isdigit() or c in "+-*/. ()" for c in expression)

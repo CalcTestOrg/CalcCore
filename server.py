@@ -1,15 +1,10 @@
 import socket
 import pyodbc
-import os
-import subprocess
 
 server_base = r'localhost\SQLEXPRESS'  
 database = 'CalculatorDB'
-username = ''
-password = ''
 
 dsn = f'DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={server_base};DATABASE={database};Trusted_Connection=yes'
-
 
 IP = '127.0.0.1'
 PORT = 4000
@@ -22,30 +17,37 @@ print("Сервер запущен, ожидание подключения...")
 conn, addr = server.accept()
 print(f"Подключение от: {addr}")
 
-request = conn.recv(1024).decode()
+while True:
+    try:
+        request = conn.recv(1024).decode().strip()
+        if not request:
+            break  
 
-try:
-        expression = request
-        result = eval(expression)  
+        allowed_chars = "0123456789+-*/(). "
+        if not all(char in allowed_chars for char in request):
+            result_str = "Ошибка: Некорректный ввод. Разрешены только числа и операторы +, -, *, /"
+        else:
+            expression = request
+            result = eval(expression)  
 
-        conn_db = pyodbc.connect(dsn)
-        cursor = conn_db.cursor()
+            conn_db = pyodbc.connect(dsn)
+            cursor = conn_db.cursor()
 
-        insert_query = "INSERT INTO Results (expression, result) VALUES (?, ?)"
-        values = (expression, result)
-        cursor.execute(insert_query, values)
-        conn_db.commit()
+            insert_query = "INSERT INTO Results (expression, result) VALUES (?, ?)"
+            values = (expression, result)
+            cursor.execute(insert_query, values)
+            conn_db.commit()
 
-        result_str = f"Результат: {result} успешно записан"
+            result_str = f"Результат: {result} успешно записан"
+
+            cursor.close()
+            conn_db.close()
+
         conn.send(result_str.encode())
 
-        cursor.close()
-        conn_db.close()
+    except Exception as e:
+        conn.send(f"Ошибка: {e}".encode())
 
-except Exception as e:
-        print(f"Ошибка: {e}")
-        result_str = f"Ошибка: {e}"
-        conn.send(result_str.encode())
-
+print("Клиент отключился, сервер завершает работу.")
 conn.close()
 server.close()
